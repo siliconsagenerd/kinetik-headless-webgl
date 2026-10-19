@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const seedText = ref('zeitraum');
+const seedText = ref('kinetik');
 const isGenerating = ref(false);
 
 let scene, camera, renderer, sceneGroup, modelGroup, animationId, controls;
@@ -40,7 +40,7 @@ const generateArt = async () => {
     const data = await response.json();
 
     if (modelGroup) {
-      // Color overrides disabled to maintain agency brand consistency
+      // Material colors derive solely from the generated PBR values
       currentSpeedX = data.physics.speed_x * 0.1;
       currentSpeedY = data.physics.speed_y * 0.1;
     }

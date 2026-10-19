@@ -22,8 +22,8 @@ def generate_kinetik_data(seed_text: str):
     hash_object = hashlib.md5(seed_text.encode())
     hex_hash = hash_object.hexdigest()
     
-    # 0:6 and 6:12 bypassed to maintain hardcoded Corporate Identity colors.
-    # Deterministic mapping shifted to material physics.
+    # Hash slices 0:6 and 6:12 intentionally unused; deterministic
+    # mapping starts at slice 12 and maps to material physics.
     
     rotation_speed_x = int(hex_hash[12:14], 16) / 255.0
     rotation_speed_y = int(hex_hash[14:16], 16) / 255.0
