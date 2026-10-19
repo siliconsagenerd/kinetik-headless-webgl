@@ -1,0 +1,13 @@
+{
+  "functions": {
+    "api/**": {
+      "runtime": "python3.11"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/generate/:seed_text",
+      "destination": "/api/generate?seed_text=:seed_text"
+    }
+  ]
+}
