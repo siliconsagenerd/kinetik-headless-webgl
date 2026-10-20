@@ -4,11 +4,8 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
-const seedText = ref('zeitraum');
+const seedText = ref('kinetik');
 const isGenerating = ref(false);
-const hashSignature = ref('');
-const materialStats = ref(null);
-const physicsStats = ref(null);
 
 let scene, camera, renderer, sceneGroup, modelGroup, animationId, controls;
 let currentSpeedX = 0.005;
@@ -23,7 +20,7 @@ let pulseTimer = 0;
 const onMouseClick = (event) => {
   mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
-  
+
   raycaster.setFromCamera(mouse, camera);
   if (modelGroup) {
     const intersects = raycaster.intersectObject(modelGroup, true);
@@ -39,24 +36,11 @@ const generateArt = async () => {
   isGenerating.value = true;
 
   try {
-    const apiBase = import.meta.env.VITE_API_BASE_URL || 'https://kinetik-generative-sculpture.vercel.app';
-    const response = await fetch(`${apiBase}/generate/${seedText.value}`);
+    const response = await fetch(`https://kinetik-generative-sculpture.vercel.app/generate/${seedText.value}`);
     const data = await response.json();
-    
-    hashSignature.value = data.hash_signature;
-    materialStats.value = data.material;
-    physicsStats.value = data.physics;
 
     if (modelGroup) {
-      modelGroup.traverse((child) => {
-        if (child.isMesh) {
-          child.material.metalness = data.material.metalness;
-          child.material.roughness = data.material.roughness;
-          child.material.wireframe = data.material.wireframe;
-          child.material.needsUpdate = true;
-        }
-      });
-      
+      // Material colors derive solely from the generated PBR values
       currentSpeedX = data.physics.speed_x * 0.1;
       currentSpeedY = data.physics.speed_y * 0.1;
     }
@@ -113,7 +97,7 @@ const initThreeJS = () => {
     loadedModel.traverse((child) => {
       if (child.isMesh) {
         child.material = new THREE.MeshStandardMaterial({
-          color: 0xA87BFA, 
+          color: 0xA87BFA,
           metalness: 0.6,
           roughness: 0.2,
           envMapIntensity: 1.0
@@ -136,7 +120,7 @@ const initThreeJS = () => {
 
   const animate = () => {
     animationId = requestAnimationFrame(animate);
-    
+
     controls.update();
 
     if (modelGroup) {
@@ -147,7 +131,7 @@ const initThreeJS = () => {
         pulseTimer += 0.15;
         const pulseScale = baseScale + Math.sin(pulseTimer) * (baseScale * 0.2);
         modelGroup.children[0].scale.set(pulseScale, pulseScale, pulseScale);
-        
+
         if (pulseTimer > Math.PI) {
           isPulsing = false;
           modelGroup.children[0].scale.set(baseScale, baseScale, baseScale);
@@ -200,13 +184,6 @@ onUnmounted(() => {
       </button>
     </div>
   </main>
-
-  <aside class="telemetry-hud" v-if="hashSignature">
-    <div class="hud-line"><span class="hud-label">MD5 SIG:</span> {{ hashSignature }}</div>
-    <div class="hud-line"><span class="hud-label">MTL:</span> {{ materialStats.metalness.toFixed(3) }} <span class="hud-label">RGH:</span> {{ materialStats.roughness.toFixed(3) }}</div>
-    <div class="hud-line"><span class="hud-label">ROT_X:</span> {{ physicsStats.speed_x.toFixed(3) }} <span class="hud-label">ROT_Y:</span> {{ physicsStats.speed_y.toFixed(3) }}</div>
-    <div class="hud-line"><span class="hud-label">TOPOLOGY:</span> {{ materialStats.wireframe ? 'WIREFRAME' : 'SOLID_SURFACE' }}</div>
-  </aside>
 </template>
 
 <style>
@@ -216,7 +193,7 @@ onUnmounted(() => {
 body {
   margin: 0;
   overflow: hidden;
-  background-color: #050505; 
+  background-color: #050505;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 #webgl-container {
@@ -236,32 +213,6 @@ body {
   color: #ffffff;
   pointer-events: auto;
 }
-@media (max-width: 768px) {
-  .ui-overlay {
-    left: 5%;
-    right: 5%;
-  }
-}
-@media (max-width: 480px) {
-  .ui-overlay {
-    top: 40%;
-    left: 2%;
-    right: 2%;
-  }
-  h1 {
-    font-size: 2.5rem;
-  }
-  p {
-    font-size: 0.875rem;
-    margin-bottom: 1.5rem;
-  }
-  .input-group {
-    flex-direction: column;
-  }
-  input {
-    min-width: 100%;
-  }
-}
 h1 {
   font-size: 5rem;
   line-height: 1.1;
@@ -270,7 +221,7 @@ h1 {
   font-weight: 700;
 }
 .accent {
-  color: #A87BFA; 
+  color: #A87BFA;
 }
 p {
   color: #a0a0a0;
@@ -288,7 +239,7 @@ input {
   border: 1px solid rgba(168, 123, 250, 0.3);
   padding: 1rem 1.5rem;
   color: white;
-  border-radius: 50px; 
+  border-radius: 50px;
   font-size: 1rem;
   outline: none;
   backdrop-filter: blur(8px);
@@ -299,12 +250,12 @@ input:focus {
   border-color: #A87BFA;
 }
 button {
-  background: #A87BFA; 
+  background: #A87BFA;
   color: #000000;
   border: none;
   padding: 1rem 2rem;
   font-weight: 600;
-  border-radius: 50px; 
+  border-radius: 50px;
   cursor: pointer;
   font-size: 1rem;
   transition: transform 0.2s, background 0.2s;
@@ -316,53 +267,5 @@ button:hover {
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-.telemetry-hud {
-  position: absolute;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 2;
-  background: rgba(5, 5, 5, 0.7);
-  border: 1px solid rgba(168, 123, 250, 0.2);
-  padding: 1.5rem;
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  color: #A87BFA;
-  font-family: ui-monospace, Consolas, monospace;
-  font-size: 0.75rem;
-  pointer-events: none;
-  min-width: 300px;
-}
-@media (max-width: 768px) {
-  .telemetry-hud {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    left: 1rem;
-    min-width: auto;
-    font-size: 0.7rem;
-    padding: 1rem;
-  }
-}
-@media (max-width: 480px) {
-  .telemetry-hud {
-    bottom: 0.5rem;
-    right: 0.5rem;
-    left: 0.5rem;
-    font-size: 0.65rem;
-    padding: 0.75rem;
-  }
-}
-.hud-line {
-  margin-bottom: 0.5rem;
-  color: #ffffff;
-}
-.hud-line:last-child {
-  margin-bottom: 0;
-}
-.hud-label {
-  color: #A87BFA;
-  font-weight: bold;
-  margin-right: 0.5rem;
 }
 </style>
